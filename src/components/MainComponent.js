@@ -7,9 +7,10 @@ import DishDetail from './DishdetailComponent';
 import Favorites from './FavoriteComponent';
 import Header from './HeaderComponent';
 import Footer from './FooterComponent';
+import Signup from './SignupComponent';
 import { Switch, Route, Redirect, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { postComment, postFeedback, fetchDishes, fetchComments, fetchPromos, fetchLeaders, loginUser, logoutUser, fetchFavorites, postFavorite, deleteFavorite } from '../redux/ActionCreators';
+import { postComment, postFeedback, fetchDishes, fetchComments, fetchPromos, fetchLeaders, loginUser, logoutUser,signupUser ,fetchFavorites, postFavorite, deleteFavorite } from '../redux/ActionCreators';
 import { actions } from 'react-redux-form';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
@@ -34,6 +35,7 @@ const mapDispatchToProps = (dispatch) => ({
   postFeedback: (feedback) => dispatch(postFeedback(feedback)),
   loginUser: (creds) => dispatch(loginUser(creds)),
   logoutUser: () => dispatch(logoutUser()),
+  signupUser:(creds)=>dispatch(signupUser(creds)),
   fetchFavorites: () => dispatch(fetchFavorites()),
   postFavorite: (dishId) => dispatch(postFavorite(dishId)),
   deleteFavorite: (dishId) => dispatch(deleteFavorite(dishId))
@@ -67,29 +69,31 @@ class Main extends Component {
     }
 
     const DishWithId = ({match}) => {
+      //console.log("Chaman Aman ka bhai "+this.props.comments.comments.filter((comment) => comment.dish === match.params.dishId))
       return(
-        this.props.auth.isAuthenticated
-        ?
-        <DishDetail dish={this.props.dishes.dishes.filter((dish) => dish._id === match.params.dishId)[0]}
-          isLoading={this.props.dishes.isLoading}
-          errMess={this.props.dishes.errMess}
-          comments={this.props.comments.comments.filter((comment) => comment.dish === match.params.dishId)}
-          commentsErrMess={this.props.comments.errMess}
-          postComment={this.props.postComment}
-          favorite={this.props.favorites.favorites.dishes.some((dish) => dish._id === match.params.dishId)}
-          postFavorite={this.props.postFavorite}
-          />
-        :
-        <DishDetail dish={this.props.dishes.dishes.filter((dish) => dish._id === match.params.dishId)[0]}
-          isLoading={this.props.dishes.isLoading}
-          errMess={this.props.dishes.errMess}
-          comments={this.props.comments.comments.filter((comment) => comment.dish === match.params.dishId)}
-          commentsErrMess={this.props.comments.errMess}
-          postComment={this.props.postComment}
-          favorite={false}
-          postFavorite={this.props.postFavorite}
-          />
-      );
+            this.props.auth.isAuthenticated
+            ?
+            <DishDetail dish={this.props.dishes.dishes.filter((dish) => dish._id === match.params.dishId)[0]}
+              isLoading={this.props.dishes.isLoading}
+              errMess={this.props.dishes.errMess}
+              comments={this.props.comments.comments.filter((comment) => comment.dish === match.params.dishId)}
+              commentsErrMess={this.props.comments.errMess}
+              postComment={this.props.postComment}
+              favorite={this.props.favorites.favorites.dishes.some((dish) => dish._id === match.params.dishId)}
+              postFavorite={this.props.postFavorite}
+              />
+            :
+            <DishDetail dish={this.props.dishes.dishes.filter((dish) => dish._id === match.params.dishId)[0]}
+              isLoading={this.props.dishes.isLoading}
+              errMess={this.props.dishes.errMess}
+              comments={this.props.comments.comments.filter((comment) => comment.dish === match.params.dishId)}
+              commentsErrMess={this.props.comments.errMess}
+              postComment={this.props.postComment}
+              favorite={false}
+              postFavorite={this.props.postFavorite}
+              />
+          );
+        
     }
 
     const PrivateRoute = ({ component: Component, ...rest }) => (
@@ -106,7 +110,8 @@ class Main extends Component {
     return (
       <div>
         <Header auth={this.props.auth} 
-          loginUser={this.props.loginUser} 
+          loginUser={this.props.loginUser}
+          signupUser={this.props.signupUser} 
           logoutUser={this.props.logoutUser} 
           />   
         <TransitionGroup>
@@ -118,6 +123,7 @@ class Main extends Component {
               <Route path="/menu/:dishId" component={DishWithId} />
               <PrivateRoute exact path="/favorites" component={() => <Favorites favorites={this.props.favorites} deleteFavorite={this.props.deleteFavorite} />} />
               <Route exact path="/contactus" component={() => <Contact resetFeedbackForm={this.props.resetFeedbackForm} postFeedback={this.props.postFeedback} />} />
+              <Route exact path='/signup' component={() => <Signup signupUser={this.props.signupUser} />} />} />
               <Redirect to="/home" />
             </Switch>
           </CSSTransition>

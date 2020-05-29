@@ -1,14 +1,18 @@
 import React, { Component } from 'react';
 import { Card, CardImg, CardImgOverlay, CardText, CardBody,
     CardTitle, Breadcrumb, BreadcrumbItem, Label,
-    Modal, ModalHeader, ModalBody, Button, Row, Col } from 'reactstrap';
+    Modal, ModalHeader, ModalBody, Button, Row, Col,Toast,ToastBody,ToastHeader,Media} from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { Control, LocalForm } from 'react-redux-form';
 import { Loading } from './LoadingComponent';
 import { baseUrl } from '../shared/baseUrl';
 import { FadeTransform, Fade, Stagger } from 'react-animation-components';
+import { LoadingMenu } from './LoadingMenu';
+import { Comment, Icon } from 'semantic-ui-react';
+import StarRatings from 'react-star-ratings';
 
-    function RenderDish({dish, favorite, postFavorite}) {
+//Post favorite is redux THunk
+function RenderDish({dish, favorite, postFavorite}) {
             return(
                 <div className="col-12 col-md-5 m-1">
                     <FadeTransform in 
@@ -18,7 +22,7 @@ import { FadeTransform, Fade, Stagger } from 'react-animation-components';
                         <Card>
                             <CardImg top src={baseUrl + dish.image} alt={dish.name} />
                             <CardImgOverlay>
-                                <Button outline color="primary" onClick={() => favorite ? console.log('Already favorite') : postFavorite(dish._id)}>
+                                <Button outline color="danger" onClick={() => favorite ? console.log('Already favorite') : postFavorite(dish._id)}>
                                     {favorite ?
                                         <span className="fa fa-heart"></span>
                                         : 
@@ -27,7 +31,7 @@ import { FadeTransform, Fade, Stagger } from 'react-animation-components';
                                 </Button>
                             </CardImgOverlay>
                             <CardBody>
-                                <CardTitle>{dish.name}</CardTitle>
+                                <CardTitle style={{fontWeight:"bold",fontSize:'22px'}}>{dish.name}</CardTitle>
                                 <CardText>{dish.description}</CardText>
                             </CardBody>
                         </Card>
@@ -41,17 +45,35 @@ import { FadeTransform, Fade, Stagger } from 'react-animation-components';
         if (comments != null)
             return(
                 <div className="col-12 col-md-5 m-1">
-                    <h4>Comments</h4>
+                    <h2>Reviews</h2 >
                     <ul className="list-unstyled">
                         <Stagger in>
                             {comments.map((comment) => {
                                 return (
-                                    <Fade in key={comment._id}>
-                                        <li>
-                                        <p>{comment.comment}</p>
-                                        <p>{comment.rating} stars</p>
-                                        <p>-- {comment.author.firstname} {comment.author.lastname} , {new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day:'2-digit'}).format(new Date(Date.parse(comment.updatedAt)))}</p>
-                                        </li>
+                                    <Fade in key={comment._id} >
+                                        
+                                        <Media>
+                                            <Media left>
+                                                <Media object src='https://img.icons8.com/color/48/000000/user-male-circle.png'/>
+                                            </Media>
+                                            <Media body className="ml-2" style={{marginBottom:'25px'}}>
+                                                <Media heading style={{marginBottom:'0'}}>{comment.author.firstname}</Media>
+                                                <p style={{marginBottom:'0',display:'inline'}}>
+                                                    <StarRatings
+                                                        rating={3}
+                                                        starRatedColor='#FDCC0D'
+                                                        numberOfStars={5}
+                                                        name='rating'
+                                                        starSpacing='0.3px'
+                                                        starDimension='15px'
+                                                        />
+                                                    <span style={{marginLeft:'30px',fontSize:'10px'}}>{new Intl.DateTimeFormat('en-US', 
+                                                    { year: 'numeric', month: 'short', day:'2-digit'})
+                                                    .format(new Date(Date.parse(comment.updatedAt)))}</span>
+                                                </p>
+                                                <p>{comment.comment}</p>
+                                            </Media>
+                                        </Media>
                                     </Fade>
                                 );
                             })}
@@ -66,20 +88,28 @@ import { FadeTransform, Fade, Stagger } from 'react-animation-components';
             );
     }
 
-    class CommentForm extends Component {
+class CommentForm extends Component {
 
         constructor(props) {
             super(props);
     
             this.toggleModal = this.toggleModal.bind(this);
             this.handleSubmit = this.handleSubmit.bind(this);
-            
+            this.changeRating = this.changeRating.bind(this)
             this.state = {
               isNavOpen: false,
-              isModalOpen: false
+              isModalOpen: false,
+              rating:0
             };
         }
     
+        changeRating( newRating, name ) {
+            console.log(newRating)
+            this.setState({
+              rating: newRating
+            });
+        }
+
         toggleModal() {
             this.setState({
               isModalOpen: !this.state.isModalOpen
@@ -87,14 +117,15 @@ import { FadeTransform, Fade, Stagger } from 'react-animation-components';
         }
     
         handleSubmit(values) {
+            console.log(values.rating)
             this.toggleModal();
-            this.props.postComment(this.props.dishId, values.rating, values.comment);
+            this.props.postComment(this.props.dishId, this.state.rating, values.comment);
         }
     
         render() {
             return(
             <div>
-                <Button outline onClick={this.toggleModal}><span className="fa fa-pencil fa-lg"></span> Submit Comment</Button>
+                <Button outline onClick={this.toggleModal}><span className="fa fa-pencil fa-fw"></span> Write a Review</Button>
                 <Modal isOpen={this.state.isModalOpen} toggle={this.toggleModal}>
                 <ModalHeader toggle={this.toggleModal}>Submit Comment</ModalHeader>
                 <ModalBody>
@@ -102,13 +133,17 @@ import { FadeTransform, Fade, Stagger } from 'react-animation-components';
                         <Row className="form-group">
                             <Col>
                             <Label htmlFor="rating">Rating</Label>
-                            <Control.select model=".rating" id="rating" className="form-control">
-                                <option>1</option>
-                                <option>2</option>
-                                <option>3</option>
-                                <option>4</option>
-                                <option>5</option>
-                            </Control.select>
+                            
+                            <StarRatings
+                                rating={this.state.rating}
+                                starRatedColor="blue"
+                                changeRating={this.changeRating}
+                                numberOfStars={5}
+                                name='rating'
+                                id='rating'
+                                model=".rating"
+                                />
+                            
                             </Col>
                         </Row>
                         <Row className="form-group">
@@ -135,7 +170,7 @@ import { FadeTransform, Fade, Stagger } from 'react-animation-components';
             return(
                 <div className="container">
                     <div className="row">
-                        <Loading />
+                        <LoadingMenu />
                     </div>
                 </div>
             );

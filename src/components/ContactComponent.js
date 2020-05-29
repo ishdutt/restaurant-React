@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Breadcrumb, BreadcrumbItem, Button, Label, Col, Row } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { Control, Form, Errors } from 'react-redux-form';
+import MapContainer from './MapComponent'
 
 const required = (val) => val && val.length;
 const maxLength = (len) => (val) => !(val) || (val.length <= len);
@@ -42,17 +43,26 @@ class Contact extends Component {
                     </div>
                     <div className="col-12 col-sm-4 offset-sm-1">
                             <h5>Our Address</h5>
-                            <address>
+                            <address style={{color:'midnightblue'}}>
                             121, Clear Water Bay Road<br />
                             Clear Water Bay, Kowloon<br />
                             HONG KONG<br />
                             <i className="fa fa-phone"></i>: +852 1234 5678<br />
                             <i className="fa fa-fax"></i>: +852 8765 4321<br />
-                            <i className="fa fa-envelope"></i>: <a href="mailto:confusion@food.net">confusion@food.net</a>
+                            <i className="fa fa-envelope"></i>: <a href="mailto:confusion@food.net" style={{color:'midnightblue'}}>confusion@food.net</a>
                             </address>
                     </div>
                     <div className="col-12 col-sm-6 offset-sm-1">
                         <h5>Map of our Location</h5>
+                            <MapContainer 
+                            google={this.props.google}
+                            containerStyle={containerStyle}
+                            initialCenter={{
+                            lat: 40.854885,
+                            lng: -88.081807
+                            }}
+                            zoom={15}
+                            onClick={this.onMapClicked}/>
                     </div>
                     <div className="col-12 col-sm-11 offset-sm-1">
                         <div className="btn-group" role="group">
@@ -200,3 +210,10 @@ class Contact extends Component {
 }
 
 export default Contact;
+
+const containerStyle = {
+    position: 'relative',  
+    width: '30px',
+    height: '30px',
+
+  }

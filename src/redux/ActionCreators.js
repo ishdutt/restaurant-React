@@ -299,10 +299,79 @@ export const logoutUser = () => (dispatch) => {
     dispatch(receiveLogout())
 }
 
+//This is SIGNUP request --NEW WORK!
+export const requestSignup = (creds) => {
+    return {
+        type: ActionTypes.SIGNUP_REQUEST,
+        creds
+    }
+}
+  
+export const receiveSignup = (response) => {
+    return {
+        type: ActionTypes.SIGNUP_SUCCESS,
+        token: response.token
+    }
+}
+  
+export const signupError = (message) => {
+    return {
+        type: ActionTypes.SIGNUP_FAILURE,
+        message
+    }
+}
+
+export const signupUser = (creds) => (dispatch) => {
+    // We dispatch requestLogin to kickoff the call to the API
+    dispatch(requestSignup(creds))
+
+    return fetch(baseUrl + 'users/signup', {
+        method: 'POST',
+        headers: { 
+            'Content-Type':'application/json' 
+        },
+        body: JSON.stringify(creds)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response;
+        } else {
+            var error = new Error('Error ' + response.status + ': ' + response.statusText);
+            error.response = response;
+            throw error;
+        }
+        },
+        error => {
+            throw error;
+        })
+    .then(response => response.json())
+    .then(response => {
+        if (response.success) {
+            // If Signup was successful, set the token in local storage
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('creds', JSON.stringify(creds));
+            // Dispatch the success action
+            // dispatch(fetchFavorites());
+            dispatch(receiveSignup(response));
+            //alert('You have registered successfully pal! Kudos ' );
+        }
+        else {
+            var error = new Error('Error ' + response.status);
+            error.response = response;
+            throw error;
+        }
+    })
+    .catch(error => dispatch(signupError(error.message)))
+};
+
+
+
+
 export const postFavorite = (dishId) => (dispatch) => {
 
     const bearer = 'Bearer ' + localStorage.getItem('token');
-
+       
+    console.log("Kudo Kun is here "+baseUrl + 'favorites/' + dishId);
     return fetch(baseUrl + 'favorites/' + dishId, {
         method: "POST",
         body: JSON.stringify({"_id": dishId}),
@@ -314,6 +383,7 @@ export const postFavorite = (dishId) => (dispatch) => {
     })
     .then(response => {
         if (response.ok) {
+            console.log("Chaman "+response)
           return response;
         } else {
           var error = new Error('Error ' + response.status + ': ' + response.statusText);
@@ -322,8 +392,10 @@ export const postFavorite = (dishId) => (dispatch) => {
         }
       },
       error => {
+          console.log("Ye toh sala error nikla ")
             throw error;
       })
+      
     .then(response => response.json())
     .then(favorites => { console.log('Favorite Added', favorites); dispatch(addFavorites(favorites)); })
     .catch(error => dispatch(favoritesFailed(error.message)));
